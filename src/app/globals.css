@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import "tailwindcss";
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@theme {
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-void-black: #050505;
+  --color-void-purple: #a855f7;
+  --color-void-glass: rgba(255, 255, 255, 0.03);
+  --color-void-border: rgba(255, 255, 255, 0.08);
+  
+  --animate-pulse-fast: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-scan: scan 2s linear infinite;
+  --animate-marquee: marquee 40s linear infinite;
+
+  @keyframes scan {
+    0% { top: -10%; opacity: 0; }
+    50% { opacity: 1; }
+    100% { top: 110%; opacity: 0; }
   }
+  
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
+}
+
+:root {
+  --accent-color: #a855f7;
+  --accent-rgb: 168, 85, 247;
+  --background: #000000;
+  --foreground: #ffffff;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply border border-void-purple/20 bg-black/95 backdrop-blur-none;
+  }
+  
+  .neon-text {
+    text-shadow: 0 0 5px rgba(var(--accent-rgb), 0.5), 0 0 10px rgba(var(--accent-rgb), 0.3);
+  }
+  
+  .neon-text-white {
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+  }
+
+  .scanner-line {
+     @apply absolute left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-void-purple to-transparent shadow-[0_0_15px_var(--accent-color)] opacity-0 z-10 pointer-events-none;
+  }
+
+  .glass-panel:hover .scanner-line {
+    animation: scan 2s linear infinite;
+    opacity: 1;
+  }
+
+  /* Scrollbar Styling */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #000000;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 3px;
+  }
 }
