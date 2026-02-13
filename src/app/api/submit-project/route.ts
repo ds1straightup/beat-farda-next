@@ -44,7 +44,7 @@ export async function POST(request: Request) {
             try {
                 await resend.emails.send({
                     from: 'FardaVision Web <onboarding@resend.dev>', // Keep as default for Resend free tier/testing
-                    to: 'thebeatfarda@gmail.com', // Updated to user's preferred email
+                    to: 'ds1straightup@gmail.com', // Updated to user's verified Resend email
                     // Note: If using Resend free tier, this email MUST be the one you signed up with.
                     // We'll trust the user to update this or Verify their domain.
                     // Actually, getting the user's email from the form might be better for 'reply-to'.
