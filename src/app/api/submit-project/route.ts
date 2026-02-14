@@ -39,46 +39,47 @@ export async function POST(request: Request) {
 
         // Send Email Notification
         // Only attempt to send if API key exists to prevent crashing in dev if not set
-    } else {
-        console.warn("RESEND_API_KEY is missing. Email not sent.");
-        return NextResponse.json({ success: false, message: "Configuration Error: RESEND_API_KEY is missing in Vercel." }, { status: 500 });
+        if (process.env.RESEND_API_KEY) {
+            const resend = new Resend(process.env.RESEND_API_KEY);
+            try {
+                await resend.emails.send({
+                    from: 'FardaVision Web <onboarding@resend.dev>', // Keep as default for Resend free tier/testing
+                    to: 'ds1straightup@gmail.com', // Updated to user's verified Resend email
+                    // Note: If using Resend free tier, this email MUST be the one you signed up with.
+                    subject: `New Project Request: ${validatedData.name}`,
+                    react: ProjectSubmissionEmail({
+                        name: validatedData.name,
+                        email: validatedData.email,
+                        role: validatedData.role,
+                        phone: validatedData.phone,
+                        social_handle: validatedData.social_handle,
+                        website: validatedData.website,
+                        contact_method: validatedData.contact_method,
+                        services: validatedData.services || [],
+                        project_name: validatedData.project_name,
+                        idea_description: validatedData.idea_description,
+                        timeline: validatedData.timeline,
+                        budget: validatedData.budget,
+                        reference_links: validatedData.reference_links,
+                        extra_info: validatedData.extra_info,
+                    }),
+                    replyTo: validatedData.email,
+                });
+            } catch (emailError: any) {
+                console.error("Email Sending Failed:", emailError);
+                return NextResponse.json({
+                    success: false,
+                    message: `Email Failed: ${emailError?.message || 'Unknown Resend Error'}`
+                }, { status: 500 });
+            }
+        } else {
+            console.warn("RESEND_API_KEY is missing. Email not sent.");
+            return NextResponse.json({ success: false, message: "Configuration Error: RESEND_API_KEY is missing in Vercel." }, { status: 500 });
+        }
     }
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    try {
-        await resend.emails.send({
-            from: 'FardaVision Web <onboarding@resend.dev>', // Keep as default for Resend free tier/testing
-            to: 'ds1straightup@gmail.com', // Updated to user's verified Resend email
-            // Note: If using Resend free tier, this email MUST be the one you signed up with.
-            subject: `New Project Request: ${validatedData.name}`,
-            react: ProjectSubmissionEmail({
-                name: validatedData.name,
-                email: validatedData.email,
-                role: validatedData.role,
-                phone: validatedData.phone,
-                social_handle: validatedData.social_handle,
-                website: validatedData.website,
-                contact_method: validatedData.contact_method,
-                services: validatedData.services || [],
-                project_name: validatedData.project_name,
-                idea_description: validatedData.idea_description,
-                timeline: validatedData.timeline,
-                budget: validatedData.budget,
-                reference_links: validatedData.reference_links,
-                extra_info: validatedData.extra_info,
-            }),
-            replyTo: validatedData.email,
-        });
-    } catch (emailError: any) {
-        console.error("Email Sending Failed:", emailError);
-        return NextResponse.json({
-            success: false,
-            message: `Email Failed: ${emailError?.message || 'Unknown Resend Error'}`
-        }, { status: 500 });
-    }
-}
 
 return NextResponse.json({ success: true, message: "Project request submitted successfully" }, { status: 201 });
-    } catch (error) {
+} catch (error) {
     console.error("Submission Error:", error);
 
     if (error instanceof z.ZodError) {
