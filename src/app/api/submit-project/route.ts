@@ -38,14 +38,12 @@ export async function POST(request: Request) {
     `;
 
         // Send Email Notification
-        // Only attempt to send if API key exists to prevent crashing in dev if not set
         if (process.env.RESEND_API_KEY) {
             const resend = new Resend(process.env.RESEND_API_KEY);
             try {
                 await resend.emails.send({
-                    from: 'FardaVision Web <onboarding@resend.dev>', // Keep as default for Resend free tier/testing
-                    to: 'ds1straightup@gmail.com', // Updated to user's verified Resend email
-                    // Note: If using Resend free tier, this email MUST be the one you signed up with.
+                    from: 'FardaVision Web <onboarding@resend.dev>',
+                    to: 'ds1straightup@gmail.com', // User's verified email
                     subject: `New Project Request: ${validatedData.name}`,
                     react: ProjectSubmissionEmail({
                         name: validatedData.name,
@@ -76,18 +74,17 @@ export async function POST(request: Request) {
             console.warn("RESEND_API_KEY is missing. Email not sent.");
             return NextResponse.json({ success: false, message: "Configuration Error: RESEND_API_KEY is missing in Vercel." }, { status: 500 });
         }
+
+        return NextResponse.json({ success: true, message: "Project request submitted successfully" }, { status: 201 });
+
+    } catch (error) {
+        console.error("Submission Error:", error);
+
+        if (error instanceof z.ZodError) {
+            // @ts-expect-error: ZodError types can be tricky with different versions
+            return NextResponse.json({ success: false, errors: error.errors || error.issues }, { status: 400 });
+        }
+
+        return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
     }
-
-return NextResponse.json({ success: true, message: "Project request submitted successfully" }, { status: 201 });
-} catch (error) {
-    console.error("Submission Error:", error);
-
-    if (error instanceof z.ZodError) {
-        // Fix: Use type assertion or access .issues safely
-        // @ts-expect-error: ZodError types can be tricky with different versions
-        return NextResponse.json({ success: false, errors: error.errors || error.issues }, { status: 400 });
-    }
-
-    return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
-}
 }
